@@ -10,11 +10,11 @@ Created on Mon Jun  4 17:15:58 2018
 # Problem Description:
 """  """
 
-#%%
+#%% Functions
 ''' Gini Index = sum(weight(1 - proportion^2)) . Sum is over the split datasets. Weight is the size of the split dataset in relation to the parent dataset.'''
 def gini_index(left_group, right_group):
-    size = left_group.count(axis = 0)[0] + right_group.count(axis = 0)[0] # Size of the dataset at the parent node
-    gini = 0
+    size = left_group.count(axis = 0)[0] + right_group.count(axis = 0)[0] # Size of the dataset at the 
+    gini = 0                                                              # parent node
     for group in left_group, right_group:
         labels = list(set(group['class']))
         rows = group.count(axis = 0)[0]     # Size of the split dataset
@@ -27,12 +27,12 @@ def gini_index(left_group, right_group):
         gini = gini + (rows/size)*(1-sumProp)   
     return gini
 
-def make_split(attribute, value, group):
+def make_split(attribute, value, group):         # Splitting a node into left and right nodes
     left_group = group[group[attribute] < value]
     right_group = group[group[attribute] >= value]
     return left_group, right_group
 
-def split_data(group):
+def split_data(group):         # Identifies the best split by going through all possible splits
     gini = []                          # Gini score tracker
     attributes = group.columns[:-1]
     for attribute in attributes:
@@ -40,18 +40,18 @@ def split_data(group):
         for value in values:
             left_group, right_group = make_split(attribute, value, group)  # make_split
             gini.append(gini_index(left_group, right_group))               # gini_score
-            print(attribute, value, gini[-1])
-            if gini[-1] == min(gini):
+        
+            if gini[-1] == min(gini):                     # keeping track of the minimum value
                 node_attrib, node_value = attribute, value
                 best_left_group = left_group 
                 best_right_group = right_group
     return {'attrib': node_attrib, 'value': node_value, 'left_group' : best_left_group, 'right_group': best_right_group}
 
-def to_terminal(group):
+def to_terminal(group):                 # Terminal node. Returns majority class as output
     outcome = group['class'].value_counts().index[0]
     return outcome
 
-def split(node, max_depth, min_num_samples, depth):
+def split(node, max_depth, min_num_samples, depth):   # Creates child nodes by checking the criteria
     left, right = node['left_group'], node['right_group']
     del(node['left_group'])
     del(node['right_group'])
@@ -73,27 +73,24 @@ def split(node, max_depth, min_num_samples, depth):
         node['right'] = split_data(right)
         split(node['right'], max_depth, min_num_samples, depth+1)
 
-def build_tree(data, max_depth, min_num_samples):
-    root = split_data(data)
+def build_tree(data, max_depth, min_num_samples): # Tree is initialised with the root node and split is 
+    root = split_data(data)                       # is called (which is a recursive function)
     split(root, max_depth, min_num_samples, 1)
     return root
 
-def predict(node, sample):
-    #print(count,'.)',node,'\n')
+def predict(node, sample):                  
     if sample[node['attrib']] < node['value']:
-        if isinstance(node['left'], dict):
-            prediction = predict(node['left'], sample)
+        if isinstance(node['left'], dict):       # If a node is a leaf, then it will be a single value,
+            prediction = predict(node['left'], sample) # else it will be a dictionary
         else:
-            #print(node['left'],'\n') 
             return node['left']
   
     else:
         if isinstance(node['right'], dict):
             prediction = predict(node['right'], sample)
         else:
-            #print(node['right'],'\n')
             return node['right']
-    print('I come here\n')
+        
     return prediction
 
 def fit_decision_tree(train_data, max_depth, min_num_samples):
@@ -113,23 +110,19 @@ def accuracy(predictions, test_y):
     inacc = abs(predictions - test_y).sum()
     perc_inacc = 100*inacc/len(test_y)
     return (100 - perc_inacc)
-
-def import_dependencies():
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
-    
 #%%
 if __name__ == '__main__' :
-    import_dependencies()
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    # Read data into a dataframe
     data = pd.read_csv('data_banknote_authentication.csv', header = None, names = ['Variance', 'Skewness', 'curtosis', 'entropy', 'class'])
     # Need to divide data into training and testing splits
     feature_data, target = data[data.columns[:-1]], data[data.columns[-1]]
-    
     train_X, test_X, train_y, test_y = train_test_split(feature_data, target)
-    
-    train_data = train_X
-    train_data['class'] = train_y
-    
+
+    train_data = train_X            
+    train_data['class'] = train_y  #Combining the training data and training targets
+    # Fit the tree on training data and predict for test data
     accur = []
     for max_depth in range(1,4):
         tree = fit_decision_tree(train_data, max_depth, 1)
