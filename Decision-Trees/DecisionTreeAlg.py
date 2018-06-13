@@ -8,7 +8,7 @@ Created on Mon Jun  4 17:15:58 2018
 """ DECISION TREE ALGO """
 
 # Problem Description:
-"""  """
+""" We need to classify a bank note as authentic or not depending on a number of measures (4) taken from a photograph. A decision tree has been implemented from scratch for this classification problem. All the data is numeric so the algorithm is written accordingly. """
 
 #%% Functions
 ''' Gini Index = sum(weight(1 - proportion^2)) . Sum is over the split datasets. Weight is the size of the split dataset in relation to the parent dataset.'''
@@ -40,6 +40,8 @@ def split_data(group):         # Identifies the best split by going through all 
         for value in values:
             left_group, right_group = make_split(attribute, value, group)  # make_split
             gini.append(gini_index(left_group, right_group))               # gini_score
+            
+            print('Attribute:',attribute,'Value:',value,'Gini:',gini[-1])
         
             if gini[-1] == min(gini):                     # keeping track of the minimum value
                 node_attrib, node_value = attribute, value
@@ -124,12 +126,12 @@ if __name__ == '__main__' :
     train_data['class'] = train_y  #Combining the training data and training targets
     # Fit the tree on training data and predict for test data
     accur = []
-    for max_depth in range(1,4):
+    for max_depth in range(4,8):
         tree = fit_decision_tree(train_data, max_depth, 1)
         predictions = decision_tree_predictions(tree, test_X)
         accur.append(accuracy(predictions, test_y))
         
     iter = 0    
-    for max_depth in range(1,4):
+    for max_depth in range(4,8):
         print('max_depth:',max_depth, 'min_samples:',1, 'accuracy:',accur[iter])
         iter = iter + 1
