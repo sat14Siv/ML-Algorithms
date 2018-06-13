@@ -33,6 +33,7 @@ def make_split(attribute, value, group):         # Splitting a node into left an
     return left_group, right_group
 
 def split_data(group):         # Identifies the best split by going through all possible splits
+    print('MAKE SPLIT')
     gini = []                          # Gini score tracker
     attributes = group.columns[:-1]
     for attribute in attributes:
@@ -40,42 +41,61 @@ def split_data(group):         # Identifies the best split by going through all 
         for value in values:
             left_group, right_group = make_split(attribute, value, group)  # make_split
             gini.append(gini_index(left_group, right_group))               # gini_score
-            
-            print('Attribute:',attribute,'Value:',value,'Gini:',gini[-1])
         
-            if gini[-1] == min(gini):                     # keeping track of the minimum value
+            if (gini[-1] == min(gini)):                     # keeping track of the minimum value
                 node_attrib, node_value = attribute, value
                 best_left_group = left_group 
                 best_right_group = right_group
-    return {'attrib': node_attrib, 'value': node_value, 'left_group' : best_left_group, 'right_group': best_right_group}
+                gini_min = gini[-1]
+                
+                if (gini[-1] == 0):
+                    print('Attribute:',node_attrib,'| Value:',node_value,'| Gini:',gini_min)
+                    return {'attrib': node_attrib, 'value': node_value, 'left_group' : best_left_group, 'right_group': best_right_group, 'Gini':gini_min}
+                    
+    print('Attribute:',node_attrib,'Value:',node_value,'Gini:',gini_min)
+        
+    return {'attrib': node_attrib, 'value': node_value, 'left_group' : best_left_group, 'right_group': best_right_group, 'Gini':gini_min}
 
 def to_terminal(group):                 # Terminal node. Returns majority class as output
+    print('LEAF')
+    print(group)
+    if len(group)==0:
+        print('ENCOUNTERED')
     outcome = group['class'].value_counts().index[0]
+    print(outcome)
     return outcome
 
 def split(node, max_depth, min_num_samples, depth):   # Creates child nodes by checking the criteria
     left, right = node['left_group'], node['right_group']
+    gini = node['Gini']
     del(node['left_group'])
     del(node['right_group'])
     
     if left.count(axis = 0)[0] == 0 or right.count(axis = 0)[0] == 0:
+        print('DEPTH:',depth)
         node['left'] = node['right'] = to_terminal(left + right)
         return
-    if depth >= max_depth:
+    if (depth >= max_depth) or (gini == 0):
+        print('DEPTH:',depth)
         node['left'], node['right'] = to_terminal(left), to_terminal(right)
         return
     if left.count(axis = 0)[0] <= min_num_samples:
+        print('DEPTH:',depth)
         node['left'] = to_terminal(left)
     else:
+        print('DEPTH:',depth)
         node['left'] = split_data(left)
         split(node['left'], max_depth, min_num_samples, depth+1)
     if right.count(axis = 0)[0] <= min_num_samples:
-        node['right'] = to_terminal(left)
+        print('DEPTH:',depth)
+        node['right'] = to_terminal(right)
     else:
+        print('DEPTH:',depth)
         node['right'] = split_data(right)
         split(node['right'], max_depth, min_num_samples, depth+1)
 
 def build_tree(data, max_depth, min_num_samples): # Tree is initialised with the root node and split is 
+    print('DEPTH:0')
     root = split_data(data)                       # is called (which is a recursive function)
     split(root, max_depth, min_num_samples, 1)
     return root
@@ -122,16 +142,16 @@ if __name__ == '__main__' :
     feature_data, target = data[data.columns[:-1]], data[data.columns[-1]]
     train_X, test_X, train_y, test_y = train_test_split(feature_data, target)
 
-    train_data = train_X            
-    train_data['class'] = train_y  #Combining the training data and training targets
+    train_data = train_X.copy()            
+    train_data.loc[:,'class'] = train_y  #Combining the training data and training targets
     # Fit the tree on training data and predict for test data
     accur = []
-    for max_depth in range(4,8):
+    for max_depth in range(3,4):
         tree = fit_decision_tree(train_data, max_depth, 1)
         predictions = decision_tree_predictions(tree, test_X)
         accur.append(accuracy(predictions, test_y))
         
     iter = 0    
-    for max_depth in range(4,8):
-        print('max_depth:',max_depth, 'min_samples:',1, 'accuracy:',accur[iter])
+    for max_depth in range(3,4):
+        print('max_depth:',max_depth, '| min_samples:',1, '| accuracy:',accur[iter])
         iter = iter + 1
