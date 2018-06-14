@@ -53,7 +53,7 @@ def get_accuracy(predictions, validation_class):
             correct+=1
     return 100*correct/len(predictions)
     
-def knn_classifier(train_data, validation_data, validation_class):
+def optimal_k(train_data, validation_data, validation_class):
     scores = []
     for k in range(2,5):
         predictions = []
@@ -79,6 +79,6 @@ def knn_prediction(train_data, test_data, k):
 if __name__ == '__main__':
     data = get_data()
     train_data, validation_data, validation_class = get_splits(data)
-    k_req = knn_classifier(train_data, validation_data, validation_class)
+    k_req = optimal_k(train_data, validation_data, validation_class)
     predictions = knn_prediction(train_data, validation_data, k_req)
     accur = get_accuracy(predictions, validation_class)    
