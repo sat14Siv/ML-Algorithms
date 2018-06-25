@@ -94,9 +94,9 @@ def split(node, max_depth, min_num_samples, depth):   # Creates child nodes by c
         node['right'] = split_data(right)
         split(node['right'], max_depth, min_num_samples, depth+1)
 
-def build_tree(data, max_depth, min_num_samples): # Tree is initialised with the root node and split is 
-    print('DEPTH:0')
-    root = split_data(data)                       # is called (which is a recursive function)
+def build_tree(data, max_depth, min_num_samples): # Tree is initialised with the root node and split
+    print('DEPTH:0')                                # is called (which is a recursive function)
+    root = split_data(data)                       
     split(root, max_depth, min_num_samples, 1)
     return root
 
@@ -114,10 +114,6 @@ def predict(node, sample):
             return node['right']
         
     return prediction
-
-def fit_decision_tree(train_data, max_depth, min_num_samples):
-    tree = build_tree(train_data, max_depth, 1)
-    return tree
 
 def decision_tree_predictions(tree, test_data):
     predictions = list()
@@ -145,9 +141,10 @@ if __name__ == '__main__' :
     train_data = train_X.copy()            
     train_data.loc[:,'class'] = train_y  #Combining the training data and training targets
     # Fit the tree on training data and predict for test data
+    min_samples = 2
     accur = []
     for max_depth in range(3,4):
-        tree = fit_decision_tree(train_data, max_depth, 1)
+        tree = build_tree(train_data, max_depth, min_samples)
         predictions = decision_tree_predictions(tree, test_X)
         accur.append(accuracy(predictions, test_y))
         
