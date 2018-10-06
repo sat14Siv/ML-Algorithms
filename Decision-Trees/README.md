@@ -1,4 +1,4 @@
-
+# Decision Tree
 This is a tutorial offered by Jason Brownlee of Machine Learning Mastery. (https://machinelearningmastery.com/implement-decision-tree-algorithm-scratch-python/)
 The CART algorithm was used to predict whether a bank note is authentic or given a number of measures taken from a photograph.
 The data is purely numeric and hence the code only works for numeric data.
